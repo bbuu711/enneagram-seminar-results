@@ -100,14 +100,38 @@ function renderList() {
     Object.keys(counts).sort((a, b) => a - b).map(t => `<span class="stat-chip">${t}번 ${typeData[t]?.potential || ''} ${counts[t]}명</span>`).join('');
 }
 
+// ── 별자리 ──
+function getZodiac(birth) {
+  if (!birth) return '';
+  const m = String(birth).match(/(\d{1,4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if (!m) return '';
+  const mo = parseInt(m[2], 10), d = parseInt(m[3], 10);
+  if (!mo || !d) return '';
+  const md = mo * 100 + d;
+  if (md >= 120 && md <= 218) return '물병자리';
+  if (md >= 219 && md <= 320) return '물고기자리';
+  if (md >= 321 && md <= 419) return '양자리';
+  if (md >= 420 && md <= 520) return '황소자리';
+  if (md >= 521 && md <= 621) return '쌍둥이자리';
+  if (md >= 622 && md <= 722) return '게자리';
+  if (md >= 723 && md <= 822) return '사자자리';
+  if (md >= 823 && md <= 923) return '처녀자리';
+  if (md >= 924 && md <= 1022) return '천칭자리';
+  if (md >= 1023 && md <= 1122) return '전갈자리';
+  if (md >= 1123 && md <= 1224) return '사수자리';
+  return '염소자리'; // 12/25 ~ 1/19
+}
+
 // ── 결과지 ──
 function renderReport(r) {
   const top = getTopType(r);
   const data = typeData[top] || {};
   const scores = getTypeScores(r);
 
+  const zodiac = getZodiac(r.birth);
+  const birthStr = r.birth ? esc(r.birth) + (zodiac ? ` (${zodiac})` : '') : '';
   $('rp-person').innerHTML = `<strong>${esc(r.name) || '이름 없음'}</strong>
-    ${[r.birth, r.gender, r.phone, r.code && '고유번호 ' + r.code, fmtDate(r.created_at)].filter(Boolean).map(esc).join(' · ')}`;
+    ${[birthStr, r.gender && esc(r.gender), r.phone && esc(r.phone)].filter(Boolean).join(' · ')}`;
   $('rp-type').textContent = data.label || `${top}번 유형`;
   $('rp-potential').innerHTML = `당신의 잠재력은 <em>${esc(data.potential)}</em>입니다.`;
   $('rp-sub').textContent = data.sub || '';
