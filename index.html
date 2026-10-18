@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 에니어그램 세미나 · 검사 결과지</title>
+  <meta name="description" content="AI 에니어그램 세미나 참가자들의 전체 검사 결과를 조회하는 결과지 사이트">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <main class="container">
+    <!-- 헤더 -->
+    <header class="top-header">
+      <div>
+        <p class="eyebrow">AI ENNEAGRAM SEMINAR</p>
+        <h1>검사 결과지</h1>
+        <p class="sub">참가자별 전체 결과 · 블러 없이 모두 보기</p>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-ghost" href="https://enneagram-seminar.vercel.app" target="_blank" id="link-test-site">🔗 검사 사이트</a>
+        <button class="btn btn-ghost" id="btn-refresh">🔄 새로고침</button>
+        <button class="btn btn-primary" id="btn-export-all">📥 전체 CSV</button>
+      </div>
+    </header>
+
+    <!-- 목록 화면 -->
+    <section id="view-list">
+      <div class="card search-card">
+        <div class="search-row">
+          <input id="search-input" class="input" type="text" placeholder="이름, 전화번호, 고유번호로 검색">
+          <select id="filter-type" class="input select">
+            <option value="">전체 유형</option>
+          </select>
+        </div>
+        <div class="stats" id="stats"></div>
+      </div>
+
+      <div class="card table-card">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>제출일시</th><th>이름</th><th>생년월일</th><th>성별</th>
+                <th>전화번호</th><th>고유번호</th><th>잠재력</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="list-body"></tbody>
+          </table>
+        </div>
+        <p class="status" id="list-status">불러오는 중...</p>
+      </div>
+    </section>
+
+    <!-- 상세 결과지 화면 -->
+    <article id="view-report" class="hidden">
+      <div class="report-toolbar no-print">
+        <button class="btn btn-ghost" id="btn-back">← 목록으로</button>
+        <div class="toolbar-right">
+          <button class="btn btn-ghost" id="btn-copy-link">🔗 링크 복사</button>
+          <button class="btn btn-ghost" id="btn-export-one">📥 CSV</button>
+          <button class="btn btn-primary" id="btn-print">🖨️ 인쇄 / PDF</button>
+        </div>
+      </div>
+
+      <div class="card report-hero">
+        <div class="person" id="rp-person"></div>
+        <span class="badge" id="rp-type"></span>
+        <h2 class="potential" id="rp-potential"></h2>
+        <p class="hero-sub" id="rp-sub"></p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="card-title">🕸️ 유형 레이더</h3>
+          <div id="radar-container" class="radar"></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">📊 1~9유형 점수 순위</h3>
+          <div id="rp-bars" class="bars"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">🤖 AI 시대의 나</h3>
+        <p class="ai-desc" id="rp-ai"></p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="card-title strength">💪 강점</h3>
+          <ul class="point-list" id="rp-strengths"></ul>
+        </div>
+        <div class="card">
+          <h3 class="card-title growth">🌱 성장 포인트</h3>
+          <ul class="point-list" id="rp-growths"></ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">📝 문항별 응답 (90문항)</h3>
+        <p class="hint">점수: 전혀 그렇지 않다 1 · 약간 그렇지 않다 2 · 약간 그렇다 4 · 매우 그렇다 5</p>
+        <div class="table-wrap">
+          <table class="data-table answers-table">
+            <thead><tr><th>순서</th><th>ID</th><th>질문</th><th>점수</th></tr></thead>
+            <tbody id="rp-answers"></tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="data.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
