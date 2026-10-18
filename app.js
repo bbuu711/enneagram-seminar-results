@@ -103,9 +103,19 @@ function renderList() {
 // ── 별자리 ──
 function getZodiac(birth) {
   if (!birth) return '';
-  const m = String(birth).match(/(\d{1,4})[-./](\d{1,2})[-./](\d{1,2})/);
-  if (!m) return '';
-  const mo = parseInt(m[2], 10), d = parseInt(m[3], 10);
+  const s = String(birth).replace(/\D/g, ''); // 숫자만
+  let mo, d;
+  if (s.length === 8) {
+    // YYYYMMDD 형식 (예: 20060826)
+    mo = parseInt(s.slice(4, 6), 10);
+    d  = parseInt(s.slice(6, 8), 10);
+  } else {
+    // YYYY-MM-DD 등 구분자 있는 형식
+    const m = String(birth).match(/(\d{1,4})[-./](\d{1,2})[-./](\d{1,2})/);
+    if (!m) return '';
+    mo = parseInt(m[2], 10);
+    d  = parseInt(m[3], 10);
+  }
   if (!mo || !d) return '';
   const md = mo * 100 + d;
   if (md >= 120 && md <= 218) return '물병자리';
@@ -119,7 +129,7 @@ function getZodiac(birth) {
   if (md >= 924 && md <= 1022) return '천칭자리';
   if (md >= 1023 && md <= 1122) return '전갈자리';
   if (md >= 1123 && md <= 1224) return '사수자리';
-  return '염소자리'; // 12/25 ~ 1/19
+  return '염소자리';
 }
 
 // ── 결과지 ──
