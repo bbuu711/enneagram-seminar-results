@@ -34,22 +34,33 @@ function getAnswerScores(r) {
   return ALL_QUESTIONS.map(() => null);
 }
 
+const isExtra = q => q.id.endsWith('-10'); // 10번째 질문 = 추가 문항 (점수 계산 제외)
+
+// 유형 점수 = X-1 ~ X-9 점수 합 (X-10 제외)
 function getTypeScores(r) {
-  if (r.type_scores && typeof r.type_scores === 'object') {
+  const ans = getAnswerScores(r);
+  if (ans.every(v => v == null) && r.type_scores && typeof r.type_scores === 'object') {
     const s = {};
     for (let t = 1; t <= 9; t++) s[t] = Number(r.type_scores[t] ?? 0);
     return s;
   }
   const s = { 1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0 };
-  getAnswerScores(r).forEach((v, i) => { if (v) s[ALL_QUESTIONS[i].type] += v; });
+  ans.forEach((v, i) => { const q = ALL_QUESTIONS[i]; if (v && !isExtra(q)) s[q.type] += v; });
   return s;
 }
 
 function getTopType(r) {
-  if (r.primary_type) return Number(r.primary_type);
   const s = getTypeScores(r);
   return Number(Object.keys(s).sort((a, b) => s[b] - s[a])[0]);
 }
+
+// 3대 유형: 가슴(2+3+4), 머리(5+6+7), 장(8+9+1)
+const TRIADS = [
+  { key: 'heart', name: '가슴형', types: [2, 3, 4], color: '#f472b6' },
+  { key: 'head',  name: '머리형', types: [5, 6, 7], color: '#22d3ee' },
+  { key: 'gut',   name: '장형',   types: [8, 9, 1], color: '#fbbf24' }
+];
+const getTriads = s => TRIADS.map(t => ({ ...t, score: t.types.reduce((a, k) => a + s[k], 0) }));
 
 const fmtDate = d => d ? new Date(d).toLocaleString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
 
@@ -117,13 +128,31 @@ function renderReport(r) {
   requestAnimationFrame(() => setTimeout(() =>
     document.querySelectorAll('.bar-fill').forEach(el => el.style.width = el.dataset.pct + '%'), 50));
 
-  // 문항별 응답
+  // 3대 유형
+  const triads = getTriads(scores);
+  const tMax = Math.max(...triads.map(t => t.score));
+  $('rp-triads').innerHTML = triads.map(t => `
+    <div class="triad ${t.score === tMax ? 'top' : ''}" style="--c:${t.color}">
+      <div class="triad-name">${t.name}</div>
+      <div class="triad-score">${t.score}<small>점</small></div>
+      <div class="triad-formula">${t.types.map(k => `${k}번 ${scores[k]}`).join(' + ')}</div>
+    </div>`).join('');
+
+  // 문항별 응답 – 유형별(X-1~X-9) + 추가 문항(X-10)
   const ans = getAnswerScores(r);
-  $('rp-answers').innerHTML = ALL_QUESTIONS.map((q, i) => `
-    <tr class="${q.id.endsWith('-10') ? 'special-row' : ''}">
-      <td>${i + 1}</td><td>${q.id}</td><td>${esc(q.text)}</td>
-      <td class="score-cell s${ans[i] ?? ''}">${ans[i] ?? '-'}</td>
-    </tr>`).join('');
+  const scoreOf = {};
+  ALL_QUESTIONS.forEach((q, i) => scoreOf[q.id] = ans[i]);
+  const row = q => `<div class="ans-row"><span class="ans-q"><b>${q.id}.</b> ${esc(q.text)}</span><span class="ans-s s${scoreOf[q.id] ?? ''}">${scoreOf[q.id] ?? '-'}</span></div>`;
+  const groups = [];
+  for (let t = 1; t <= 9; t++) {
+    groups.push({ title: `${t}번 유형`, total: scores[t], qs: normalQuestions[t] });
+  }
+  groups.push({ title: '추가 문항', total: null, qs: specialQuestions });
+  $('rp-answers').innerHTML = groups.map(g => `
+    <div class="ans-group ${g.total == null ? 'extra' : ''}">
+      <div class="ans-head"><span>${g.title}</span>${g.total != null ? `<span>합계 ${g.total}점</span>` : '<span>점수 계산 제외</span>'}</div>
+      ${g.qs.map(row).join('')}
+    </div>`).join('');
 }
 
 // ── 화면 전환 (링크 공유 가능: #id=123) ──
@@ -138,12 +167,12 @@ function route() {
 // ── CSV ──
 function exportCSV(list, filename) {
   const head = ['제출일시', '이름', '생년월일', '성별', '전화번호', '고유번호', '주유형', '잠재력',
-    ...[1,2,3,4,5,6,7,8,9].map(t => `${t}번 점수`),
+    ...[1,2,3,4,5,6,7,8,9].map(t => `${t}번 점수`), '가슴형', '머리형', '장형',
     ...ALL_QUESTIONS.map((q, i) => `${i + 1}(${q.id})`)];
   const rows = list.map(r => {
     const t = getTopType(r), s = getTypeScores(r);
     return [fmtDate(r.created_at), r.name, r.birth, r.gender, r.phone, r.code, t, typeData[t]?.potential,
-      ...[1,2,3,4,5,6,7,8,9].map(k => s[k]), ...getAnswerScores(r)];
+      ...[1,2,3,4,5,6,7,8,9].map(k => s[k]), ...getTriads(s).map(x => x.score), ...getAnswerScores(r)];
   });
   const csv = [head, ...rows].map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
   const a = document.createElement('a');

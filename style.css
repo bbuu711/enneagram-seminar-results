@@ -163,10 +163,60 @@ h1 {
   .potential { font-size: 24px; }
 }
 
+/* ── 3대 유형 ── */
+.triad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.triad {
+  border-radius: 14px; padding: 18px 14px; text-align: center;
+  border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+  transition: transform .2s;
+}
+.triad:hover { transform: translateY(-2px); }
+.triad.top { border-color: var(--c); background: color-mix(in srgb, var(--c) 8%, transparent); box-shadow: 0 0 20px color-mix(in srgb, var(--c) 20%, transparent); }
+.triad-name { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.triad.top .triad-name { color: var(--c); font-weight: 700; }
+.triad-score { font-size: 30px; font-weight: 900; color: var(--c); line-height: 1; }
+.triad-score small { font-size: 14px; font-weight: 400; }
+.triad-formula { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* ── 문항별 응답 (유형별 그룹) ── */
+.ans-list { display: grid; gap: 16px; }
+.ans-group {
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.ans-group.extra { border-color: rgba(244, 114, 182, 0.25); }
+.ans-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; background: rgba(34, 211, 238, 0.07);
+  font-size: 14px; font-weight: 700; color: var(--cyan);
+}
+.ans-group.extra .ans-head { background: rgba(244, 114, 182, 0.07); color: var(--pink); }
+.ans-head span:last-child { font-size: 13px; font-weight: 400; color: var(--muted); }
+.ans-row {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  padding: 9px 14px; border-top: 1px solid rgba(148,163,184,0.06);
+  font-size: 13px;
+}
+.ans-row:hover { background: rgba(255,255,255,0.025); }
+.ans-q { flex: 1; line-height: 1.5; }
+.ans-q b { color: var(--muted); margin-right: 4px; }
+.ans-s {
+  flex-shrink: 0; width: 28px; text-align: center;
+  font-weight: 700; font-size: 14px; padding: 2px 0;
+}
+.ans-s.s1 { color: #64748b; } .ans-s.s2 { color: #94a3b8; }
+.ans-s.s4 { color: #67e8f9; } .ans-s.s5 { color: #c4b5fd; }
+
+@media (max-width: 600px) { .triad-grid { grid-template-columns: 1fr; } }
+
+
 @media print {
   body { background: #fff; color: #111; }
   .bg-glow, .top-header, .no-print { display: none !important; }
   .card { background: #fff; border-color: #ddd; backdrop-filter: none; break-inside: avoid; }
   .potential em, h1 { color: #111; -webkit-text-fill-color: #111; }
-  .ai-desc, .point-list li, .data-table td { color: #111; }
+  .ai-desc, .point-list li, .ans-row { color: #111; }
+  .triad { border-color: #ddd; background: #f8f8f8; }
+  .ans-head { background: #f0f0f0; color: #111; }
 }
+
